@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
-import { CheckCircle, Package, Truck, Home } from 'lucide-react';
+import { CheckCircle, Package, Truck, Home, Loader2, AlertCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 
 const OrderSuccessPage = () => {
   const { id } = useParams();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -16,6 +17,7 @@ const OrderSuccessPage = () => {
         setOrder(data);
       } catch (error) {
         console.error('Failed to fetch order', error);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -23,8 +25,31 @@ const OrderSuccessPage = () => {
     fetchOrder();
   }, [id]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center dark:text-white">Loading...</div>;
-  if (!order) return <div className="min-h-screen flex items-center justify-center dark:text-white">Order not found</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dark-bg">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-primary-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400">Loading order details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !order) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dark-bg">
+        <div className="text-center">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Order Not Found</h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">We couldn't find the order you're looking for.</p>
+          <Link to="/my-orders" className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
+            View My Orders
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const steps = [
     { status: 'Pending', icon: Package, label: 'Order Placed' },

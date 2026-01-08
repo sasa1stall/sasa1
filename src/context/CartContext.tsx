@@ -15,6 +15,7 @@ export interface CartItem {
 
 interface CartContextType {
   cartItems: CartItem[];
+  cartLoading: boolean;
   addToCart: (product: any, variant: Variant, qty: number) => void;
   removeFromCart: (productId: string, weight: string) => void;
   clearCart: () => void;
@@ -26,27 +27,48 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartLoading, setCartLoading] = useState(true);
   const { user } = useAuth();
 
   // Load Cart (Backend or Local)
   useEffect(() => {
     const loadCart = async () => {
+        setCartLoading(true);
         if (user) {
             try {
                 const { data } = await api.get('/cart');
                 // Ensure data.items respects the CartItem structure
                 if (data && data.items) {
                     setCartItems(data.items);
+                } else {
+                    setCartItems([]);
                 }
             } catch (error) {
                 console.error('Failed to load remote cart', error);
+                // Don't reset cart on error - keep existing state
+                // Try to load from localStorage as fallback
+                const savedCart = localStorage.getItem('cartItems');
+                if (savedCart) {
+                    try {
+                        setCartItems(JSON.parse(savedCart));
+                    } catch (e) {
+                        setCartItems([]);
+                    }
+                }
             }
         } else {
             const savedCart = localStorage.getItem('cartItems');
             if (savedCart) {
-                setCartItems(JSON.parse(savedCart));
+                try {
+                    setCartItems(JSON.parse(savedCart));
+                } catch (e) {
+                    setCartItems([]);
+                }
+            } else {
+                setCartItems([]);
             }
         }
+        setCartLoading(false);
     };
     loadCart();
   }, [user]);
@@ -127,7 +149,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart, totalPrice }}>
+    <CartContext.Provider value={{ cartItems, cartLoading, addToCart, removeFromCart, clearCart, totalPrice }}>
       {children}
     </CartContext.Provider>
   );
@@ -140,3 +162,4 @@ export const useCart = () => {
   }
   return context;
 };
+

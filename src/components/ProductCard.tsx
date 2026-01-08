@@ -24,10 +24,11 @@ const ProductCard = ({ product }: { product: Product }) => {
   const { addToCart } = useCart();
   const [isAdded, setIsAdded] = useState(false);
 
-  // Auto-select first variant if only 1 exists? No, user said "Add to Cart disabled until weight is selected"
+  // Check if selected variant is in stock
+  const isOutOfStock = selectedVariant && selectedVariant.stock <= 0;
   
   const handleAddToCart = () => {
-    if (selectedVariant) {
+    if (selectedVariant && selectedVariant.stock > 0) {
       addToCart(product, selectedVariant, 1);
       setIsAdded(true);
       setTimeout(() => setIsAdded(false), 2000);
@@ -57,20 +58,29 @@ const ProductCard = ({ product }: { product: Product }) => {
           <div>
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Select Quantity</label>
             <div className="flex flex-wrap gap-2">
-              {product.variants.map((variant) => (
-                <button
-                  key={variant.weight}
-                  onClick={() => setSelectedVariant(variant)}
-                  className={clsx(
-                    "px-3 py-1 rounded-full text-sm font-medium border transition-all duration-200",
-                    selectedVariant?.weight === variant.weight
-                      ? "bg-primary-600 text-white border-primary-600 shadow-md transform scale-105"
-                      : "bg-white dark:bg-dark-bg text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary-400"
-                  )}
-                >
-                  {variant.weight}
-                </button>
-              ))}
+              {product.variants.map((variant) => {
+                const variantOutOfStock = variant.stock <= 0;
+                return (
+                  <button
+                    key={variant.weight}
+                    onClick={() => !variantOutOfStock && setSelectedVariant(variant)}
+                    disabled={variantOutOfStock}
+                    className={clsx(
+                      "px-3 py-1 rounded-full text-sm font-medium border transition-all duration-200 relative",
+                      variantOutOfStock
+                        ? "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed line-through"
+                        : selectedVariant?.weight === variant.weight
+                          ? "bg-primary-600 text-white border-primary-600 shadow-md transform scale-105"
+                          : "bg-white dark:bg-dark-bg text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary-400"
+                    )}
+                  >
+                    {variant.weight}
+                    {variantOutOfStock && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1 rounded">Out</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -78,16 +88,24 @@ const ProductCard = ({ product }: { product: Product }) => {
             <div>
               <p className="text-xs text-gray-500">Price</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {selectedVariant ? `₹${selectedVariant.price}` : <span className="text-sm text-gray-400">Select size</span>}
+                {selectedVariant ? (
+                  isOutOfStock ? (
+                    <span className="text-sm text-red-500">Out of Stock</span>
+                  ) : (
+                    `₹${selectedVariant.price}`
+                  )
+                ) : (
+                  <span className="text-sm text-gray-400">Select size</span>
+                )}
               </p>
             </div>
             
             <button
               onClick={handleAddToCart}
-              disabled={!selectedVariant || isAdded}
+              disabled={!selectedVariant || isAdded || !!isOutOfStock}
               className={clsx(
                 "flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 transform active:scale-95",
-                !selectedVariant 
+                !selectedVariant || isOutOfStock
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed" 
                   : isAdded 
                     ? "bg-green-500 text-white" 

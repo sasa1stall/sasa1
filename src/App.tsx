@@ -10,6 +10,8 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import MyOrdersPage from './pages/MyOrdersPage';
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -20,7 +22,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<HomePage />} />
-              <Route path="shop" element={<HomePage />} />
               <Route path="login" element={<LoginPage />} />
               <Route path="signup" element={<SignupPage />} />
               <Route path="forgot-password" element={<ForgotPasswordPage />} />
@@ -29,6 +30,8 @@ function App() {
                  <Route path="checkout" element={<CheckoutPage />} />
                  <Route path="order-success/:id" element={<OrderSuccessPage />} />
                  <Route path="my-orders" element={<MyOrdersPage />} />
+                 <Route path="profile" element={<ProfilePage />} />
+                 <Route path="settings" element={<SettingsPage />} />
               </Route>
 
               <Route element={<ProtectedRoute adminOnly={true} />}>
@@ -44,3 +47,5 @@ function App() {
 }
 
 export default App;
+
+

@@ -4,7 +4,7 @@ import ProductCard from '../components/ProductCard';
 import { clsx } from 'clsx';
 import { Loader2 } from 'lucide-react';
 
-const CATEGORIES = ['All', 'Chicken', 'Mutton', 'Seafood', 'Eggs'];
+const CATEGORIES = ['All', 'Chicken', 'Mutton', 'Seafood', 'Beef'];
 
 const HomePage = () => {
   const [products, setProducts] = useState<any[]>([]);

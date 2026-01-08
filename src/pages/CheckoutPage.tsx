@@ -51,6 +51,7 @@ const CheckoutPage = () => {
           weight: item.selectedVariant.weight,
           qty: item.qty,
           price: item.selectedVariant.price,
+          selectedVariant: item.selectedVariant, // Include full variant for stock checking
         })),
         shippingAddress: {
           fullName: formData.fullName,
@@ -64,9 +65,11 @@ const CheckoutPage = () => {
       const { data } = await api.post('/orders', orderData);
       clearCart();
       navigate(`/order-success/${data._id}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Order failed', error);
-      alert('Order failed to place. Please try again.');
+      // Show specific error message from backend if available
+      const errorMessage = error?.response?.data?.message || 'Order failed to place. Please try again.';
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
