@@ -1,44 +1,56 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
-import { Settings, User, Trash2, ArrowLeft, AlertTriangle, Loader2, Lock, X } from 'lucide-react';
-import { clsx } from 'clsx';
+import React, { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../services/api";
+import {
+  Settings,
+  User,
+  Trash2,
+  ArrowLeft,
+  AlertTriangle,
+  Loader2,
+  Lock,
+  X,
+} from "lucide-react";
+import { clsx } from "clsx";
 
 const SettingsPage = () => {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
-  
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletePassword, setDeletePassword] = useState('');
+  const [deletePassword, setDeletePassword] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
-  const [confirmText, setConfirmText] = useState('');
+  const [deleteError, setDeleteError] = useState("");
+  const [confirmText, setConfirmText] = useState("");
 
   const handleDeleteAccount = async () => {
-    if (confirmText !== 'DELETE') {
-      setDeleteError('Please type DELETE to confirm');
+    if (confirmText !== "DELETE") {
+      setDeleteError("Please type DELETE to confirm");
       return;
     }
 
     if (!deletePassword) {
-      setDeleteError('Please enter your password');
+      setDeleteError("Please enter your password");
       return;
     }
 
     setDeleteLoading(true);
-    setDeleteError('');
+    setDeleteError("");
 
     try {
-      await api.delete('/auth/account', {
-        data: { password: deletePassword }
+      await api.delete("/auth/account", {
+        data: { password: deletePassword },
       });
-      
+
       // Logout and redirect
       logout();
-      navigate('/');
-    } catch (err: any) {
-      setDeleteError(err.response?.data?.message || 'Failed to delete account');
+      navigate("/");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setDeleteError(
+        error.response?.data?.message || "Failed to delete account"
+      );
     } finally {
       setDeleteLoading(false);
     }
@@ -46,17 +58,17 @@ const SettingsPage = () => {
 
   const closeModal = () => {
     setShowDeleteModal(false);
-    setDeletePassword('');
-    setConfirmText('');
-    setDeleteError('');
+    setDeletePassword("");
+    setConfirmText("");
+    setDeleteError("");
   };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-xl mx-auto">
         {/* Back Button */}
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 mb-6 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -76,7 +88,7 @@ const SettingsPage = () => {
           {/* Settings Options */}
           <div className="p-6 space-y-4">
             {/* Edit Profile */}
-            <Link 
+            <Link
               to="/profile"
               className="flex items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
             >
@@ -95,7 +107,7 @@ const SettingsPage = () => {
             </Link>
 
             {/* Delete Account */}
-            <button 
+            <button
               onClick={() => setShowDeleteModal(true)}
               className="w-full flex items-center p-4 bg-red-50 dark:bg-red-900/20 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors group"
             >
@@ -125,7 +137,7 @@ const SettingsPage = () => {
                 <AlertTriangle className="w-6 h-6 text-white mr-3" />
                 <h2 className="text-xl font-bold text-white">Delete Account</h2>
               </div>
-              <button 
+              <button
                 onClick={closeModal}
                 className="text-white/80 hover:text-white transition-colors"
               >
@@ -159,7 +171,8 @@ const SettingsPage = () => {
               {/* Confirm Text Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Type <span className="font-bold text-red-600">DELETE</span> to confirm
+                  Type <span className="font-bold text-red-600">DELETE</span> to
+                  confirm
                 </label>
                 <input
                   type="text"
@@ -199,10 +212,10 @@ const SettingsPage = () => {
                 </button>
                 <button
                   onClick={handleDeleteAccount}
-                  disabled={deleteLoading || confirmText !== 'DELETE'}
+                  disabled={deleteLoading || confirmText !== "DELETE"}
                   className={clsx(
                     "flex-1 py-3 px-4 rounded-lg font-semibold text-white flex items-center justify-center transition-all",
-                    deleteLoading || confirmText !== 'DELETE'
+                    deleteLoading || confirmText !== "DELETE"
                       ? "bg-gray-400 cursor-not-allowed"
                       : "bg-red-600 hover:bg-red-700"
                   )}

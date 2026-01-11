@@ -1,90 +1,109 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
-import { User, Lock, Phone, Mail, Save, Loader2, Check, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { clsx } from 'clsx';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
+import api from "../services/api";
+import {
+  User,
+  Lock,
+  Phone,
+  Mail,
+  Save,
+  Loader2,
+  Check,
+  ArrowLeft,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import { clsx } from "clsx";
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   const [formData, setFormData] = useState({
-    name: '',
-    mobile: '',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    name: "",
+    mobile: "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
-  
+
   const [showPasswordChange, setShowPasswordChange] = useState(false);
 
   useEffect(() => {
     if (user) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        name: user.name || '',
-        mobile: user.mobile || ''
+        name: user.name || "",
+        mobile: user.mobile || "",
       }));
     }
   }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
+    setError("");
     setSuccess(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
     setSuccess(false);
 
     // Validation
     if (showPasswordChange) {
       if (formData.newPassword !== formData.confirmPassword) {
-        setError('New passwords do not match');
+        setError("New passwords do not match");
         setLoading(false);
         return;
       }
       if (formData.newPassword && formData.newPassword.length < 8) {
-        setError('New password must be at least 8 characters');
+        setError("New password must be at least 8 characters");
         setLoading(false);
         return;
       }
     }
 
     try {
-      const updateData: any = {
+      const updateData: {
+        name: string;
+        mobile: string;
+        currentPassword?: string;
+        newPassword?: string;
+      } = {
         name: formData.name,
-        mobile: formData.mobile
+        mobile: formData.mobile,
       };
 
-      if (showPasswordChange && formData.currentPassword && formData.newPassword) {
+      if (
+        showPasswordChange &&
+        formData.currentPassword &&
+        formData.newPassword
+      ) {
         updateData.currentPassword = formData.currentPassword;
         updateData.newPassword = formData.newPassword;
       }
 
-      const { data } = await api.put('/auth/profile', updateData);
-      
+      const { data } = await api.put("/auth/profile", updateData);
+
       // Update local user state
       updateUser(data);
-      
+
       setSuccess(true);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
       }));
       setShowPasswordChange(false);
-      
+
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update profile');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || "Failed to update profile");
     } finally {
       setLoading(false);
     }
@@ -94,8 +113,8 @@ const ProfilePage = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-dark-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-xl mx-auto">
         {/* Back Button */}
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 mb-6 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -119,7 +138,7 @@ const ProfilePage = () => {
                 {error}
               </div>
             )}
-            
+
             {success && (
               <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg text-sm flex items-center">
                 <Check className="w-5 h-5 mr-2" />
@@ -151,7 +170,9 @@ const ProfilePage = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email Address
-                <span className="text-xs text-gray-500 ml-2">(cannot be changed)</span>
+                <span className="text-xs text-gray-500 ml-2">
+                  (cannot be changed)
+                </span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -159,7 +180,7 @@ const ProfilePage = () => {
                 </div>
                 <input
                   type="email"
-                  value={user?.email || ''}
+                  value={user?.email || ""}
                   disabled
                   className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                 />
@@ -195,7 +216,9 @@ const ProfilePage = () => {
                 className="flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
               >
                 <Lock className="w-5 h-5 mr-2" />
-                {showPasswordChange ? 'Cancel Password Change' : 'Change Password'}
+                {showPasswordChange
+                  ? "Cancel Password Change"
+                  : "Change Password"}
               </button>
             </div>
 
