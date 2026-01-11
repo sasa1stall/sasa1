@@ -1,29 +1,32 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
-import { Loader2 } from 'lucide-react';
+import React, { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import api from "../services/api";
+import { Loader2 } from "lucide-react";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
-      const { data } = await api.post('/auth/login', { email, password });
+      const { data } = await api.post("/auth/login", { email, password });
       login(data);
       // Check for redirect param
-      navigate('/');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed');
+      const redirect = searchParams.get("redirect");
+      navigate(redirect ? `/${redirect}` : "/");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -37,14 +40,19 @@ const LoginPage = () => {
             Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Or{' '}
-            <Link to="/signup" className="font-medium text-primary-600 hover:text-primary-500">
+            Or{" "}
+            <Link
+              to="/signup"
+              className="font-medium text-primary-600 hover:text-primary-500"
+            >
               create a new account
             </Link>
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && <div className="text-red-500 text-center text-sm">{error}</div>}
+          {error && (
+            <div className="text-red-500 text-center text-sm">{error}</div>
+          )}
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <input
@@ -69,7 +77,10 @@ const LoginPage = () => {
           </div>
 
           <div className="flex items-center justify-end">
-            <Link to="/forgot-password" className="text-sm font-medium text-primary-600 hover:text-primary-500">
+            <Link
+              to="/forgot-password"
+              className="text-sm font-medium text-primary-600 hover:text-primary-500"
+            >
               Forgot your password?
             </Link>
           </div>
@@ -80,7 +91,11 @@ const LoginPage = () => {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
-              {loading ? <Loader2 className="animate-spin w-5 h-5"/> : 'Sign in'}
+              {loading ? (
+                <Loader2 className="animate-spin w-5 h-5" />
+              ) : (
+                "Sign in"
+              )}
             </button>
           </div>
         </form>
